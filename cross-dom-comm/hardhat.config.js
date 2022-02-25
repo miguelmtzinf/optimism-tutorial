@@ -11,7 +11,7 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
 });
 
 
-const mnemonic = 'bird flower cave dress idea salon sibling damage drama economy grant evoke' 
+const mnemonic = 'test test test test test test test test test test test junk' 
 
 
 // You need to export an object to set up your config
