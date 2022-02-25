@@ -51,4 +51,4 @@ contract Greeter {
     // If it is a cross domain message, find out where it is from
     return ICrossDomainMessenger(cdmAddr).xDomainMessageSender();
   }    // getXorig()
-}
+}   // contract Greeter
