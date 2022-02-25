@@ -11,7 +11,7 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
 });
 
 
-const mnemonic = 'test test test test test test test test test test test junk' 
+const mnemonic = ' <<< Your mnemonic goes here >>> ' 
 
 
 // You need to export an object to set up your config
@@ -28,7 +28,7 @@ module.exports = {
         accounts: { mnemonic: mnemonic }
       },
       "kovan": {
-        url: 'https://eth-kovan.alchemyapi.io/v2/QLKnnRw7T3Djb3Quw35NBGyAw6CswRqR',
+        url: ' <<< Kovan URL Goes here >>>',
         accounts: { mnemonic: mnemonic }
       }
   } 
