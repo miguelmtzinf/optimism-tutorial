@@ -160,7 +160,7 @@ This is where we'll store the message to send to L2.
 
 Here we create the message, the calldata to be sent on L2.
 The Solidity [`abi.encodeWithSignature`](https://docs.soliditylang.org/en/v0.8.12/units-and-global-variables.html?highlight=abi.encodeWithSignature#abi-encoding-and-decoding-functions) function creates this calldata.
-As [specified in the ABI](https://docs.soliditylang.org/en/v0.5.3/abi-spec.html), it is four bytes of signature for the function being called followed by the parameter, in this case a string.
+As [specified in the ABI](https://docs.soliditylang.org/en/v0.8.12/abi-spec.html), it is four bytes of signature for the function being called followed by the parameter, in this case a string.
 
 ```solidity
         ICrossDomainMessenger(crossDomainMessengerAddr).sendMessage(
