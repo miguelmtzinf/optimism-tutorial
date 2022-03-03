@@ -9,10 +9,11 @@ const optimismSDK = require("@eth-optimism/sdk")
 const network = "kovan"    // "kovan" or "mainnet"
 
 const mnemonic = "test test test test test test test test test test test junk"
-const l2Url = `https://${network}.optimism.io`
-
+const l2Url = "https://opt-kovan.g.alchemy.com/v2/LX8fbnFwi6eTRygEv2RSsY5hcvYBlmir" // `https://${network}.optimism.io`
+const l1Url = "https://eth-kovan.alchemyapi.io/v2/gp03_wJCXf9VyAVCLeoNembJ9fV59iKy"
 const getSigners = async () => {
-    const l1RpcProvider = new ethers.providers.getDefaultProvider(network)
+//    const l1RpcProvider = new ethers.providers.getDefaultProvider(network)
+    const l1RpcProvider = new ethers.providers.JsonRpcProvider(l1Url)    
     const l2RpcProvider = new ethers.providers.JsonRpcProvider(l2Url)
     const privateKey = ethers.utils.HDNode.fromMnemonic(mnemonic).privateKey
     const l1Wallet = new ethers.Wallet(privateKey, l1RpcProvider)
@@ -61,42 +62,60 @@ const depositETH = async (l1Signer, l2Signer, crossChainMessenger) => {
         console.log(`On L1:${l1Balance} Gwei    On L2:${l2Balance} Gwei`)
     }    // reportBalances
 
-
+    console.log("Deposit ETH")
     await reportBalances()
 
-    const depositETHResponse = await crossChainMessenger.depositETH(1000000000n) // 1 GWei
+    const depositETHResponse = await crossChainMessenger.depositETH(1000000001n) // 1 GWei
     await depositETHResponse.wait()
-    let status = 0
-    let counter = 0
-/*
-    while (status == 0) {  
-      status = await crossChainMessenger.getMessageStatus(depositETHResponse)
-      console.log(status)
-      // await reportBalances()
-      counter ++  
-      sleep(1000)
-    }
-    console.log(`Counter: ${counter}`)
-*/
-
-//    console.log(depositETHResponse)
-
-    const message = await crossChainMessenger.getMessagesByTransaction(depositETHResponse)
-//    console.log(`getMessageByTransaction\n ${JSON.stringify(message[0])}`)
-    const xChainMsg = await crossChainMessenger.toCrossChainMessage(depositETHResponse)
-//    console.log(`toCrossChainMessage\n${Object.keys(xChainMsg)}`)
-    // await xChainMsg.wait()
-    console.log(xChainMsg.transactionHash)
-
+    await crossChainMessenger.waitForMessageStatus(depositETHResponse, 
+                                                  optimismSDK.MessageStatus.RELAYED, 
+                                                  {pollIntervalMs: 1000, timeoutMs: 3600*1000})
     await reportBalances()    
-    process.exit(0)
-
-
-    console.log("E")
-    console.log(xChainMsg)
-
-    await reportBalances()  
 }     // depositETH()
+
+
+
+const withdrawETH = async (l1Signer, l2Signer, crossChainMessenger) => {
+
+  // The function is here so we won't have to explicitly pass 
+  // it l1Signer and l2Signer
+  const reportBalances = async () => {
+      l1Balance = (await l1Signer.getBalance()).toString().slice(0,-9)
+      l2Balance = (await l2Signer.getBalance()).toString().slice(0,-9)
+
+      console.log(`On L1:${l1Balance} Gwei    On L2:${l2Balance} Gwei`)
+  }    // reportBalances
+
+  console.log("Withdraw ETH")
+  await reportBalances()
+
+  const withdrawETHResponse = await crossChainMessenger.withdrawETH(1000000000000000n) // Million GWei
+  await withdrawETHResponse.wait()
+
+  await crossChainMessenger.waitForMessageStatus(withdrawETHResponse, 
+    optimismSDK.MessageStatus.IN_CHALLENGE_PERIOD, 
+    {pollIntervalMs: 1000, timeoutMs: 3600*1000}) 
+  console.log("In the challenge period") 
+  await crossChainMessenger.waitForMessageStatus(withdrawETHResponse, 
+                                                optimismSDK.MessageStatus.READY_FOR_RELAY, 
+                                                {pollIntervalMs: 1000, timeoutMs: 3600*1000})
+  await reportBalances()
+  await crossChainMessenger.finalizeMessage(withdrawETHResponse)
+  console.log("Finalized message")
+  await reportBalances()
+  await crossChainMessenger.waitForMessageStatus(withdrawETHResponse, 
+    optimismSDK.MessageStatus.RELAYED, 
+    {pollIntervalMs: 1000, timeoutMs: 3600*1000})
+  console.log("Message has been relayed")  
+  await reportBalances()      
+  for(var i=0; i<20; i++) {
+    await sleep(1000)
+    console.log(i)
+    await reportBalances()
+  }
+}     // withdrawETH()
+
+
 
 
 const main = async () => {    
@@ -108,8 +127,8 @@ const main = async () => {
         l2SignerOrProvider: l2Signer
     })
 
-    await depositETH(l1Signer, l2Signer, crossChainMessenger)
-
+//    await depositETH(l1Signer, l2Signer, crossChainMessenger)
+    await withdrawETH(l1Signer, l2Signer, crossChainMessenger)    
     /*
     const l1ERC20 = new ethers.Contract(daiAddrs.l1Addr, erc20ABI, l1Signer)
     const l2ERC20 = new ethers.Contract(daiAddrs.l2Addr, erc20ABI, l2Signer)    
