@@ -17,16 +17,16 @@ module.exports = {
         mnemonic: 'test test test test test test test test test test test junk'
       }
     },
-    'optimistic-kovan': {
+    okovan: {
       chainId: 69,
       url: 'https://kovan.optimism.io',
       accounts: [process.env.PRIVATE_KEY]
     },
-    'optimistic-mainnet': {
-      chainId: 10,
-      url: 'https://mainnet.optimism.io',
-      accounts: [process.env.PRIVATE_KEY]
-    },
+    // 'optimistic-mainnet': {
+    //   chainId: 10,
+    //   url: 'https://mainnet.optimism.io',
+    //   accounts: [process.env.PRIVATE_KEY]
+    // },
   },
   solidity: '0.8.9',
 }
